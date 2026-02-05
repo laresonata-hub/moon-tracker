@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moon Cycle Tracker</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Playfair+Display:wght@400;500;600&family=EB+Garamond:wght@400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'EB Garamond', serif;
+            background: url('assets/backgrounds/StarryMapSky–Lavender.jpg') center center / cover no-repeat fixed;
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(20, 10, 40, 0.45);
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1, h2 {
+            font-family: 'Cinzel', serif;
+        }
+
+        h3 {
+            font-family: 'Playfair Display', serif;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        header h1 {
+            font-size: 3.5rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .main-moon-display {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 50px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .moon-image-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .moon-image {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            box-shadow: 0 0 50px rgba(200, 180, 220, 0.5);
+            margin: 0 auto;
+        }
+
+        .current-phase {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .current-phase h2 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .phase-date {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .astro-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .astro-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 30px 30px 30px 35px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border-left: 3px solid rgba(245, 174, 114, 0.6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .astro-card .watermark {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 6rem;
+            opacity: 0.07;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .astro-card h3 {
+            font-size: 1rem;
+            margin-bottom: 6px;
+            color: #f5ae72;
+            font-family: 'EB Garamond', serif;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .astro-card .sign-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .astro-card p {
+            line-height: 1.6;
+            font-size: 0.95rem;
+            opacity: 0.85;
+        }
+
+        .timeline {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .timeline h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+
+        .timeline-phases {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline-line {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            right: 5%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            z-index: 1;
+        }
+
+        .timeline-phase {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            flex: 1;
+        }
+
+        .timeline-phase.active .phase-dot {
+            background: #f5ae72;
+            box-shadow: 0 0 20px rgba(245, 174, 114, 0.6);
+        }
+
+        .phase-dot {
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            transition: all 0.3s;
+        }
+
+        .phase-label {
+            font-size: 0.85rem;
+            font-weight: 300;
+        }
+
+        .affirmation-section {
+            background: rgba(241, 156, 135, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .affirmation-section h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #f5ae72;
+        }
+
+        .affirmation-text {
+            font-size: 1.3rem;
+            font-style: italic;
+            line-height: 1.8;
+            max-width: 700px;
+            margin: 0 auto;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .meditation-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .meditation-section h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .meditation-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .play-button {
+            background: linear-gradient(135deg, #f5ae72, #f19c87);
+            border: none;
+            color: white;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            font-size: 2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 30px rgba(0,0,0,0.3);
+        }
+
+        .meditation-description {
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .cycle-breakdown {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .cycle-breakdown h2 {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+
+        .phases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .phase-card {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s;
+        }
+
+        .phase-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .phase-card.current {
+            background: rgba(245, 174, 114, 0.3);
+            border: 2px solid #f5ae72;
+        }
+
+        .phase-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .decorative-star {
+            position: absolute;
+            opacity: 0.15;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .phase-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+
+        .phase-card .phase-date-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 10px;
+        }
+
+        .phase-card p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            .main-moon-display {
+                padding: 30px 20px;
+            }
+
+            .astro-info {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .timeline-phases {
+                flex-wrap: wrap;
+                gap: 20px;
+            }
+
+            .phases-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header style="position: relative;">
+            <img src="assets/stars/Star8pts_Gold.png" class="decorative-star" style="width: 80px; top: -20px; left: 5%;">
+            <img src="assets/stars/Star5pts_Gold.png" class="decorative-star" style="width: 50px; top: 10px; right: 8%;">
+            <img src="assets/stars/Comet_Gold.png" class="decorative-star" style="width: 120px; bottom: -10px; right: 15%; transform: rotate(-20deg);">
+            <h1>🌙 Lunar Journey 🌙</h1>
+            <p>Track your path through the celestial cycles</p>
+        </header>
+
+        <div class="main-moon-display">
+            <div class="moon-image-container">
+                <img src="" alt="Current Moon Phase" class="moon-image" id="moonImage">
+            </div>
+
+            <div class="current-phase">
+                <h2 id="currentPhaseName">Loading...</h2>
+                <p class="phase-date" id="currentDate"></p>
+                <p class="phase-date" id="illumination"></p>
+            </div>
+
+            <div class="astro-info">
+                <div class="astro-card">
+                    <span class="watermark" id="signWatermark"></span>
+                    <h3>Moon Sign</h3>
+                    <div class="sign-name" id="moonSignName">...</div>
+                    <p id="moonSign">Calculating...</p>
+                </div>
+                <div class="astro-card">
+                    <span class="watermark" id="houseWatermark"></span>
+                    <h3>Moon House</h3>
+                    <div class="sign-name" id="moonHouseName">...</div>
+                    <p id="moonHouse">Calculating...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="timeline">
+            <h2>Moon Cycle Timeline</h2>
+            <div class="timeline-phases">
+                <div class="timeline-line"></div>
+                <div class="timeline-phase" id="phase-new">
+                    <div class="phase-dot"></div>
+                    <div class="phase-label">New Moon</div>
+                </div>
+                <div class="timeline-phase" id="phase-waxing-crescent">
+                    <div class="phase-dot"></div>
+                    <div class="phase-label">Waxing Crescent</div>
+                </div>
+                <div class="timeline-phase" id="phase-first-quarter">
+                    <div class="phase-dot"></div>
+                    <div class="phase-label">First Quarter</div>
+                </div>
+                <div class="timeline-phase" id="phase-waxing-gibbous">
+                    <div class="phase-dot"></div>
+                    <div class="phase-label">Waxing Gibbous</div>
+                </div>
+                <div class="timeline-phase" id="phase-full">
+                    <div class="phase-dot"></div>
+                    <div class="phase-label">Full Moon</div>
+                </div>
+                <div class="timeline-phase" id="phase-waning-gibbous">
+                    <div class="phase-dot"></div>
+                    <div class="phase-label">Waning Gibbous</div>
+                </div>
+                <div class="timeline-phase" id="phase-last-quarter">
+                    <div class="phase-dot"></div>
+                    <div class="phase-label">Last Quarter</div>
+                </div>
+                <div class="timeline-phase" id="phase-waning-crescent">
+                    <div class="phase-dot"></div>
+                    <div class="phase-label">Waning Crescent</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="affirmation-section">
+            <h2>Moon Affirmation</h2>
+            <p class="affirmation-text" id="affirmationText">Loading your affirmation...</p>
+        </div>
+
+        <div class="meditation-section">
+            <h2>Guided Meditation</h2>
+            <div class="meditation-controls">
+                <button class="play-button" id="playButton">▶</button>
+                <p class="meditation-description" id="meditationDescription">
+                    Take a moment to connect with the lunar energy. Click play to begin your guided meditation.
+                </p>
+            </div>
+        </div>
+
+        <div class="cycle-breakdown">
+            <h2>Complete Lunar Cycle</h2>
+            <div class="phases-grid" id="phasesGrid">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Moon phase data and calculations
+        const LUNAR_MONTH = 29.53058867; // days
+        const KNOWN_NEW_MOON = new Date('2000-01-06 18:14:00'); // Reference new moon
+
+        const zodiacSigns = [
+            'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+            'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+        ];
+
+        const moonPhases = [
+            { name: 'New Moon', start: 0, end: 1, icon: '🌑', description: 'A time for new beginnings and setting intentions.' },
+            { name: 'Waxing Crescent', start: 1, end: 6.38, icon: '🌒', description: 'Build momentum and take action on your goals.' },
+            { name: 'First Quarter', start: 6.38, end: 8.38, icon: '🌓', description: 'Overcome challenges with determination and courage.' },
+            { name: 'Waxing Gibbous', start: 8.38, end: 13.76, icon: '🌔', description: 'Refine and perfect your plans as energy builds.' },
+            { name: 'Full Moon', start: 13.76, end: 15.76, icon: '🌕', description: 'Celebrate achievements and release what no longer serves.' },
+            { name: 'Waning Gibbous', start: 15.76, end: 21.14, icon: '🌖', description: 'Share wisdom and express gratitude.' },
+            { name: 'Last Quarter', start: 21.14, end: 23.14, icon: '🌗', description: 'Let go and prepare for transformation.' },
+            { name: 'Waning Crescent', start: 23.14, end: 29.53, icon: '🌘', description: 'Rest, reflect, and surrender to the cycle.' }
+        ];
+
+        const affirmations = {
+            'New Moon': 'I plant seeds of intention and trust in new beginnings.',
+            'Waxing Crescent': 'I take inspired action toward my dreams with confidence.',
+            'First Quarter': 'I overcome obstacles with strength and clarity.',
+            'Waxing Gibbous': 'I refine my vision and prepare for abundance.',
+            'Full Moon': 'I celebrate my growth and release what no longer serves me.',
+            'Waning Gibbous': 'I share my light and express gratitude for all I have received.',
+            'Last Quarter': 'I release the old to make space for the new.',
+            'Waning Crescent': 'I rest deeply and trust in the wisdom of cycles.'
+        };
+
+        function getMoonAge(date) {
+            const diff = date.getTime() - KNOWN_NEW_MOON.getTime();
+            const days = diff / (1000 * 60 * 60 * 24);
+            return days % LUNAR_MONTH;
+        }
+
+        function getMoonPhase(moonAge) {
+            for (let phase of moonPhases) {
+                if (moonAge >= phase.start && moonAge < phase.end) {
+                    return phase;
+                }
+            }
+            return moonPhases[0];
+        }
+
+        function getMoonIllumination(moonAge) {
+            return Math.round((1 - Math.cos((moonAge / LUNAR_MONTH) * 2 * Math.PI)) * 50);
+        }
+
+        function getMoonSign(date) {
+            // Simplified calculation - moon moves through zodiac in ~27.3 days
+            const dayOfYear = Math.floor((date - new Date(date.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            const signIndex = Math.floor((dayOfYear * 12 / 365) % 12);
+            return zodiacSigns[signIndex];
+        }
+
+        function getMoonHouse(date) {
+            // Simplified: house changes roughly every 2-3 hours
+            const hour = date.getHours();
+            const house = Math.floor(hour / 2) % 12 + 1;
+
+            const houseDescriptions = {
+                1: 'First House - Self and Identity',
+                2: 'Second House - Values and Resources',
+                3: 'Third House - Communication and Learning',
+                4: 'Fourth House - Home and Family',
+                5: 'Fifth House - Creativity and Pleasure',
+                6: 'Sixth House - Health and Service',
+                7: 'Seventh House - Partnerships',
+                8: 'Eighth House - Transformation',
+                9: 'Ninth House - Philosophy and Travel',
+                10: 'Tenth House - Career and Status',
+                11: 'Eleventh House - Community and Hope',
+                12: 'Twelfth House - Spirituality and Healing'
+            };
+
+            return houseDescriptions[house];
+        }
+
+        const zodiacSymbols = {
+            'Aries': '\u2648', 'Taurus': '\u2649', 'Gemini': '\u264A',
+            'Cancer': '\u264B', 'Leo': '\u264C', 'Virgo': '\u264D',
+            'Libra': '\u264E', 'Scorpio': '\u264F', 'Sagittarius': '\u2650',
+            'Capricorn': '\u2651', 'Aquarius': '\u2652', 'Pisces': '\u2653'
+        };
+
+        const houseSymbols = {
+            1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V', 6: 'VI',
+            7: 'VII', 8: 'VIII', 9: 'IX', 10: 'X', 11: 'XI', 12: 'XII'
+        };
+
+        function getWatercolorMoon(moonAge) {
+            const illumination = getMoonIllumination(moonAge);
+            if (illumination >= 90) return 'assets/watercolor/FullMoonWatercolor_Silver.png';
+            if (illumination >= 70) return 'assets/watercolor/FullMoonWatercolor_Blue.png';
+            if (illumination >= 40) return 'assets/watercolor/FullMoonWatercolor_Pink.png';
+            if (illumination >= 20) return 'assets/watercolor/FullMoonWatercolor_Harvest.png';
+            return 'assets/watercolor/FullMoonWatercolor_Blood.png';
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function initializePage() {
+            const now = new Date();
+            const moonAge = getMoonAge(now);
+            const currentPhase = getMoonPhase(moonAge);
+            const illumination = getMoonIllumination(moonAge);
+            const moonSign = getMoonSign(now);
+            const moonHouse = getMoonHouse(now);
+
+            // Update current phase display
+            document.getElementById('currentPhaseName').textContent = currentPhase.name;
+            document.getElementById('currentDate').textContent = formatDate(now);
+            document.getElementById('illumination').textContent = `${illumination}% illuminated`;
+
+            // Update moon image with watercolor asset
+            document.getElementById('moonImage').src = getWatercolorMoon(moonAge);
+
+            // Update astrology info
+            document.getElementById('signWatermark').textContent = zodiacSymbols[moonSign];
+            document.getElementById('moonSignName').textContent = moonSign;
+            document.getElementById('moonSign').textContent = getMoonSignDescription(moonSign).charAt(0).toUpperCase() + getMoonSignDescription(moonSign).slice(1);
+
+            const houseNumber = Math.floor(now.getHours() / 2) % 12 + 1;
+            document.getElementById('houseWatermark').textContent = houseSymbols[houseNumber];
+            document.getElementById('moonHouseName').textContent = moonHouse;
+            document.getElementById('moonHouse').textContent = getHouseDescription(moonHouse);
+
+            // Update affirmation
+            document.getElementById('affirmationText').textContent = affirmations[currentPhase.name];
+
+            // Update timeline
+            updateTimeline(currentPhase.name);
+
+            // Create phase cards
+            createPhaseCards(moonAge);
+
+            // Setup meditation
+            setupMeditation(currentPhase.name);
+        }
+
+        function getMoonSignDescription(sign) {
+            const descriptions = {
+                'Aries': 'passionate and impulsive energy.',
+                'Taurus': 'grounded and sensual energy.',
+                'Gemini': 'curious and communicative energy.',
+                'Cancer': 'nurturing and emotional energy.',
+                'Leo': 'creative and expressive energy.',
+                'Virgo': 'practical and analytical energy.',
+                'Libra': 'harmonious and balanced energy.',
+                'Scorpio': 'intense and transformative energy.',
+                'Sagittarius': 'adventurous and philosophical energy.',
+                'Capricorn': 'disciplined and ambitious energy.',
+                'Aquarius': 'innovative and humanitarian energy.',
+                'Pisces': 'intuitive and compassionate energy.'
+            };
+            return descriptions[sign];
+        }
+
+        function getHouseDescription(houseText) {
+            const descriptions = {
+                'First House': 'Focus on self-discovery and personal expression.',
+                'Second House': 'Attention to material security and personal values.',
+                'Third House': 'Enhanced communication and learning opportunities.',
+                'Fourth House': 'Deep connection to home, family, and roots.',
+                'Fifth House': 'Creative expression and joyful experiences.',
+                'Sixth House': 'Focus on wellness, routines, and service.',
+                'Seventh House': 'Relationships and partnerships take center stage.',
+                'Eighth House': 'Time for deep transformation and intimacy.',
+                'Ninth House': 'Expansion through learning and adventure.',
+                'Tenth House': 'Career goals and public recognition.',
+                'Eleventh House': 'Community connections and future visions.',
+                'Twelfth House': 'Spiritual growth and inner work.'
+            };
+
+            for (let key in descriptions) {
+                if (houseText.includes(key)) {
+                    return descriptions[key];
+                }
+            }
+            return '';
+        }
+
+        function updateTimeline(currentPhaseName) {
+            const phaseMap = {
+                'New Moon': 'phase-new',
+                'Waxing Crescent': 'phase-waxing-crescent',
+                'First Quarter': 'phase-first-quarter',
+                'Waxing Gibbous': 'phase-waxing-gibbous',
+                'Full Moon': 'phase-full',
+                'Waning Gibbous': 'phase-waning-gibbous',
+                'Last Quarter': 'phase-last-quarter',
+                'Waning Crescent': 'phase-waning-crescent'
+            };
+
+            const currentId = phaseMap[currentPhaseName];
+            if (currentId) {
+                document.getElementById(currentId).classList.add('active');
+            }
+        }
+
+        function createPhaseCards(currentMoonAge) {
+            const phasesGrid = document.getElementById('phasesGrid');
+            const now = new Date();
+
+            moonPhases.forEach(phase => {
+                const card = document.createElement('div');
+                card.className = 'phase-card';
+
+                // Check if this is the current phase
+                if (currentMoonAge >= phase.start && currentMoonAge < phase.end) {
+                    card.classList.add('current');
+                }
+
+                // Calculate approximate date for this phase
+                const daysUntilPhase = phase.start - currentMoonAge;
+                const phaseDate = new Date(now.getTime() + daysUntilPhase * 24 * 60 * 60 * 1000);
+
+                card.innerHTML = `
+                    <div class="phase-icon">${phase.icon}</div>
+                    <h3>${phase.name}</h3>
+                    <p class="phase-date-info">${phaseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                    <p>${phase.description}</p>
+                `;
+
+                phasesGrid.appendChild(card);
+            });
+        }
+
+        function setupMeditation(phaseName) {
+            const meditations = {
+                'New Moon': 'Close your eyes and imagine a seed being planted in fertile soil. Breathe deeply as you visualize your intentions taking root in the darkness, preparing to grow.',
+                'Waxing Crescent': 'Feel the gentle energy of growth as you breathe. With each inhale, draw in courage and momentum. With each exhale, release doubt.',
+                'First Quarter': 'Stand firm in your power. Breathe strength into any challenges you face. You have the determination to overcome any obstacle.',
+                'Waxing Gibbous': 'Breathe in refinement and clarity. Your vision is becoming reality. Feel the building energy preparing for fullness.',
+                'Full Moon': 'Bathe in the luminous energy of completion. Breathe in gratitude for all you have manifested. Breathe out anything that no longer serves your highest good.',
+                'Waning Gibbous': 'With gratitude, breathe in the wisdom you have gained. With generosity, breathe out your light to share with others.',
+                'Last Quarter': 'Breathe in acceptance. Breathe out release. Trust in the natural cycle of endings that make space for new beginnings.',
+                'Waning Crescent': 'Rest deeply in stillness. Each breath draws you inward, into a sacred space of reflection and renewal.'
+            };
+
+            const playButton = document.getElementById('playButton');
+            const description = document.getElementById('meditationDescription');
+
+            description.textContent = meditations[phaseName];
+
+            let isPlaying = false;
+            let utterance = null;
+
+            playButton.addEventListener('click', () => {
+                if (!isPlaying) {
+                    utterance = new SpeechSynthesisUtterance(meditations[phaseName]);
+                    utterance.rate = 0.7;
+                    utterance.pitch = 1;
+                    utterance.volume = 1;
+
+                    utterance.onend = () => {
+                        isPlaying = false;
+                        playButton.textContent = '▶';
+                    };
+
+                    speechSynthesis.speak(utterance);
+                    isPlaying = true;
+                    playButton.textContent = '⏸';
+                } else {
+                    speechSynthesis.cancel();
+                    isPlaying = false;
+                    playButton.textContent = '▶';
+                }
+            });
+        }
+
+        // Initialize the page
+        initializePage();
+    </script>
+</body>
+</html>
